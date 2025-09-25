@@ -14,6 +14,11 @@ public class App {
             this.lineCount = lineCount;
         }
 
+        public LineCountInfo(int lineCount, String filePath) {
+            this.filePath = filePath;
+            this.lineCount = lineCount;
+        }
+
         public String getFilePath() {
             return filePath;
         }
