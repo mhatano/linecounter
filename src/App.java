@@ -1,11 +1,13 @@
-public class App {
-    private final String[] directories = {
-        "submod",
-        "submod/lib",
-        "submod/utl"
-    };
+import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 
-    private class LineCountInfo {
+public class App {
+    private static List<String> directories = new ArrayList<>();
+
+    private static class LineCountInfo {
         private final String filePath;
         private final int lineCount;
 
@@ -28,18 +30,68 @@ public class App {
         }
     }
 
-    private final LineCountInfo[] lineCountInfos = {
-        new LineCountInfo("submod/SubmodMain.java", 120),
-        new LineCountInfo("submod/SubmodHelper0.java", 120),
-        new LineCountInfo("submod/lib/LibMain.java", 39),
-        new LineCountInfo("submod/ext/HelloWorld.java",50),
-        new LineCountInfo("submod/utl/UtlMain.java", 220),
-        new LineCountInfo("submod/ext/CreateHell.java", 34),
-    };
+    private static List<LineCountInfo>  lineCountInfos = new ArrayList<>();
 
     public static void main(String[] args) throws Exception {
+        String directorieslist = null;
+        String linecountslist = null;
+        for ( String arg : args ) {
+            if ( arg.equals("--help") || arg.equals("-h") ) {
+                System.out.println("Usage: java -jar App.jar");
+                System.out.println("The program reads 'directories.list' and 'linecounts.list' files from the current directory.");
+                System.out.println("It then computes and prints the total line counts for each directory listed in 'directories.list'.");
+                return;
+            } else if ( directorieslist == null ) {
+                directorieslist = arg;
+            } else if ( linecountslist == null ) {
+                linecountslist = arg;
+            } else {
+                System.err.println("Unknown argument: " + arg); 
+                return;
+            }
+        }
         App main = new App();
+        if ( directorieslist == null ) directorieslist = "directories.list";
+        if ( linecountslist == null ) linecountslist = "linecounts.list";
+        main.readDirectoriesList(directorieslist);
+        main.readLineCountsList(linecountslist);
         main.run();
+    }
+
+    private void readDirectoriesList(String filename) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+        String inputLine;
+        while ( (inputLine = reader.readLine()) != null ) {
+            directories.add(inputLine);
+        }
+    }
+
+    private void readLineCountsList(String filename) throws Exception {
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(filename)));
+        String inputLine;
+        boolean zeroIsNumber = false;
+        int lineNo = 0;
+        while ( (inputLine = reader.readLine()) != null ) {
+            String[] parts = inputLine.split("\\s+");
+            if ( parts.length != 2 ) {
+                System.err.printf("File %s line %d is not in proper fomat.\n",filename,lineNo++);
+                continue;
+            }
+            int lineCount;
+            try {
+                lineCount = Integer.parseInt(parts[0]);
+                zeroIsNumber = true;
+            } catch ( NumberFormatException e ) {
+                lineCount = Integer.parseInt(parts[1]);
+                zeroIsNumber = false;
+            }
+            if ( zeroIsNumber ) {
+                lineCountInfos.add(new LineCountInfo(lineCount,parts[1]));
+            } else {
+                lineCountInfos.add(new LineCountInfo(parts[0],lineCount));
+            }
+            lineNo++;
+        }
     }
 
     private void run() {
@@ -58,7 +110,7 @@ public class App {
         return filePath.startsWith(dir + "/");
     }
 
-    private boolean alsoMatches(String filePath, String dir, String[] directories) {
+    private boolean alsoMatches(String filePath, String dir, List<String> directories) {
         for (String d : directories) {
             if (!d.equals(dir) && !matches(dir,d) && matches(filePath, d)) {
                 return true;
