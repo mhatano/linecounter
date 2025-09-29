@@ -37,9 +37,11 @@ public class App {
         String linecountslist = null;
         for ( String arg : args ) {
             if ( arg.equals("--help") || arg.equals("-h") ) {
-                System.out.println("Usage: java -jar App.jar");
-                System.out.println("The program reads 'directories.list' and 'linecounts.list' files from the current directory.");
-                System.out.println("It then computes and prints the total line counts for each directory listed in 'directories.list'.");
+                System.out.println("Usage: java -jar App.jar <file of list of directories> <file of list of line counts>");
+                System.out.println("The program reads list of directories (default filename 'directories.list')");
+                System.out.println("and list of counted number of lines (default filename 'linecounts.list') files");
+                System.out.println("from the current directory. It then computes and prints the total line counts");
+                System.out.println("for each directory listed.");
                 return;
             } else if ( directorieslist == null ) {
                 directorieslist = arg;
